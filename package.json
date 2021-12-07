@@ -1,0 +1,13 @@
+{
+  "name": "tracker",
+  "version": "0.1",
+  "repository": "https://github.com/poeticmetric/tracker",
+  "license": "MIT",
+  "scripts": {
+    "build": "mkdirp dist && uglifyjs --output dist/poeticmetric.js --mangle -- src/index.js"
+  },
+  "dependencies": {
+    "mkdirp": "^1.0.4",
+    "uglify-js": "^3.14.1"
+  }
+}
