@@ -2,10 +2,13 @@
     'use strict';
 
     var eventKindPageView = 'PAGE_VIEW';
-
     var lastUrl;
 
+    var ignore = window.localStorage && window.localStorage.pmIgnore;
+
     function sendEvent(kind) {
+        if (ignore) return;
+
         var url = window.document.location.href;
 
         if (url === lastUrl) return;

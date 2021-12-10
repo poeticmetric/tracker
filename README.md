@@ -1,8 +1,8 @@
 # PoeticMetric Tracker
 
-[Manifesto](https://www.poeticmetric.com/manifesto?ref=https://github.com/poeticmetric/tracker) | [Docs](https://www.poeticmetric.com/docs?ref=https://github.com/poeticmetric/tracker) | [Blog](https://www.poeticmetric.com/blog?ref=https://github.com/poeticmetric/tracker) | [Twitter](https://twitter.com/PoeticMetricHQ)
+[Manifesto](https://www.poeticmetric.com/manifesto?utm_source=github&utm_content=script&utm_term=manifesto) | [Docs](https://www.poeticmetric.com/docs?utm_source=github&utm_content=script&utm_term=docs) | [Blog](https://www.poeticmetric.com/blog?utm_source=github&utm_content=script&utm_term=blog) | [Twitter](https://twitter.com/PoeticMetricHQ)
 
-[PoeticMetric](https://www.poeticmetric.com/?ref=https://github.com/poeticmetric/tracker) is a privacy-first, regulation-compliant, blazingly fast analytics tool. And this is the source code of PoeticMetric's event tracker.
+[PoeticMetric](https://www.poeticmetric.com/?utm_source=github&utm_content=script&utm_term=description) is a privacy-first, regulation-compliant, blazingly fast analytics tool. And this is the source code of PoeticMetric's event tracker.
 
 ## Building
 
