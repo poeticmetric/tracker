@@ -1,57 +1,104 @@
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    var eventKindPageView = 'PAGE_VIEW';
-    var lastUrl;
+  if (window.localStorage && window.localStorage.pmIgnore) {
+    return;
+  }
 
-    var ignore = window.localStorage && window.localStorage.pmIgnore;
+  // API urls
+  var apiUrl = 'https://api.poeticmetric.com';
+  var apiEventsUrl = apiUrl + '/events';
+  var apiEventDurationSaveUrl = apiEventsUrl + '/durations';
 
-    function sendEvent(kind) {
-        if (ignore) return;
+  // event stuff
+  var lastUrl;
+  var duration = 0;
+  var lastVisibleAt = null;
+  var eventId = null;
 
-        var url = window.document.location.href;
+  function handleVisibilityChange() {
+    if (document.visibilityState === 'visible') {
+      lastVisibleAt = new Date();
+    } else {
+      sendDuration();
+    }
+  }
 
-        if (url === lastUrl) return;
+  function onPageChange() {
+    sendDuration();
 
-        var intl = window.Intl.DateTimeFormat().resolvedOptions();
-        var referrer = null;
+    duration = 0;
+    lastVisibleAt = new Date();
+    eventId = null;
 
-        if (lastUrl !== undefined) {
-            referrer = lastUrl;
-        } else if (window.document.referrer !== "") {
-            referrer = window.document.referrer;
-        }
+    sendPageViewEvent();
+  }
 
-        var payload = {
-            k: kind,
-            l: intl.locale,
-            r: referrer,
-            t: intl.timeZone,
-            u: url,
-        };
+  function sendDuration() {
+    if (eventId === null || lastVisibleAt === null) return;
 
-        lastUrl = url;
+    duration = duration + Math.round((new Date().getTime() - lastVisibleAt.getTime())/ 1000);
 
-        var request = new XMLHttpRequest();
+    navigator.sendBeacon(
+      apiEventDurationSaveUrl, JSON.stringify({
+        d: duration,
+        e: eventId,
+      }));
+  }
 
-        request.open('POST', 'https://api.poeticmetric.com/events', true);
-        request.setRequestHeader('content-type', 'application/json');
-        request.send(JSON.stringify(payload));
+  function sendPageViewEvent() {
+    var url = window.document.location.href;
+
+    if (url === lastUrl) return;
+
+    var intl = window.Intl.DateTimeFormat().resolvedOptions();
+    var referrer = null;
+
+    if (lastUrl !== undefined) {
+      referrer = lastUrl;
+    } else if (window.document.referrer !== "") {
+      referrer = window.document.referrer;
     }
 
-    if ((window.history || {}).pushState) {
-        var windowHistoryPushState = window.history.pushState;
+    var payload = {
+      k: 'PAGE_VIEW',
+      l: intl.locale,
+      r: referrer,
+      t: intl.timeZone,
+      u: url,
+    };
 
-        window.history.pushState = function() {
-            windowHistoryPushState.apply(this, arguments);
+    lastUrl = url;
+    eventId = null;
+    duration = 0;
 
-            sendEvent(eventKindPageView);
-        }
+    var request = new XMLHttpRequest();
 
-        window.addEventListener('popstate', function() {
-            sendEvent(eventKindPageView);
-        });
+    request.open('POST', apiEventsUrl, true);
+    request.setRequestHeader('content-type', 'application/json');
+    request.onload = function () {
+      if (request.status === 202) {
+        var response = JSON.parse(request.responseText);
+
+        eventId = response.eventId;
+      }
     }
+    request.send(JSON.stringify(payload));
+  }
 
-    sendEvent(eventKindPageView);
+  if ((window.history || {}).pushState) {
+    var windowHistoryPushState = window.history.pushState;
+
+    window.history.pushState = function () {
+      windowHistoryPushState.apply(this, arguments);
+
+      onPageChange();
+    }
+  }
+
+  window.addEventListener('popstate', onPageChange, { capture: true });
+  window.addEventListener('visibilitychange', handleVisibilityChange, { capture: true });
+  window.addEventListener('pagehide', handleVisibilityChange, { capture: true });
+
+  onPageChange();
 })();
